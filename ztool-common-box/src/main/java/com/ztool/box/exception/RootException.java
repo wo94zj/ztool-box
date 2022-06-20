@@ -1,6 +1,9 @@
 package com.ztool.box.exception;
 
+import com.ztool.box.resp.UnifyCode;
 import lombok.Data;
+
+import java.lang.reflect.Array;
 
 /**
  * @Author zhaoj
@@ -9,7 +12,10 @@ import lombok.Data;
 @Data
 public class RootException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     private int code;
+    private String message;
 
     public RootException() {
         super();
@@ -17,7 +23,16 @@ public class RootException extends RuntimeException {
     }
 
     public RootException(int code, String message) {
-        super(message);
         this.code = code;
+        this.message = message;
+    }
+
+    public RootException(UnifyCode unifyCode, Object... args) {
+        this.code = unifyCode.code();
+        if (args != null && Array.getLength(args) > 0) {
+            this.message = String.format(unifyCode.msg(), args);
+        } else {
+            this.message = unifyCode.msg();
+        }
     }
 }

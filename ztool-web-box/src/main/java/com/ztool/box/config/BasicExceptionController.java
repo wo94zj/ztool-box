@@ -1,5 +1,6 @@
 package com.ztool.box.config;
 
+import com.ztool.box.exception.RootException;
 import com.ztool.box.resp.BaseUnifyCode;
 import com.ztool.box.resp.UnifyResp;
 import com.ztool.box.util.StringUtil;
@@ -33,11 +34,15 @@ public class BasicExceptionController implements ErrorController {
 		Object code = request.getAttribute("javax.servlet.error.status_code");
 		Object message = request.getAttribute("javax.servlet.error.message");
 		Object requestUri = request.getAttribute("javax.servlet.error.request_uri");
-		log.error("request Failed :{}, {}, {}", code, message, requestUri);
+		Object ex = request.getAttribute("javax.servlet.error.exception");
+		log.error("request Failed :{}, {}, {}", code, message, requestUri, ex);
 
 		String c = String.valueOf(code);
 		if(StringUtil.isNumeric(c) && Integer.valueOf(c) == 404) {
 			return new ResponseEntity<UnifyResp<Serializable>>(UnifyResp.newBuilder().withUnifyCode(BaseUnifyCode.ERROR_404).build(), HttpStatus.OK);
+		} else if (ex instanceof RootException) {
+			RootException e = (RootException) ex;
+			new ResponseEntity<UnifyResp<Serializable>>(UnifyResp.newBuilder().withCode(e.getCode()).withMsg(e.getMessage()).build(), HttpStatus.OK);
 		}
 		
 		return new ResponseEntity<UnifyResp<Serializable>>(UnifyResp.newBuilder().withUnifyCode(BaseUnifyCode.ERROR_500).build(), HttpStatus.OK);
